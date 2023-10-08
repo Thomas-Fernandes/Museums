@@ -24,8 +24,7 @@ CREATE TABLE finances (
 
 CREATE TABLE musee (
     ID_Musee INT NOT NULL AUTO_INCREMENT,
-    LegalName VARCHAR(255) NOT NULL,
-    AlternateName VARCHAR(255),
+    Nom VARCHAR(255) NOT NULL,
     PhoneNumber INT,
     Address VARCHAR(255),
     RefFinances INT NOT NULL,

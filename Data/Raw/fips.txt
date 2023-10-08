@@ -144,7 +144,7 @@ independent cities, parishes, boroughs) in the United States.
     02020        Anchorage Borough
     02050        Bethel Census Area
     02060        Bristol Bay Borough
-    02068        Denali Borough                         (created after 1990)
+    02068        Denali Borough
     02070        Dillingham Census Area
     02090        Fairbanks North Star Borough
     02100        Haines Borough
@@ -159,13 +159,13 @@ independent cities, parishes, boroughs) in the United States.
     02188        Northwest Arctic Borough
     02201        Prince of Wales-Outer Ketchikan Census Area
     02220        Sitka Borough
-    02231        Skagway-Yakutat-Angoon Census Area         (1990 Census Area)
-    02232        Skagway-Hoonah-Angoon Census Area          (created after 1990)
+    02231        Skagway-Yakutat-Angoon Census Area
+    02232        Skagway-Hoonah-Angoon Census Area
     02240        Southeast Fairbanks Census Area
     02261        Valdez-Cordova Census Area
     02270        Wade Hampton Census Area
     02280        Wrangell-Petersburg Census Area
-    02282        Yakutat Borough                       (created after 1990)
+    02282        Yakutat Borough
     02290        Yukon-Koyukuk Census Area
     04000        Arizona
     04001        Apache County
@@ -3065,7 +3065,7 @@ independent cities, parishes, boroughs) in the United States.
     51760        Richmond city
     51770        Roanoke city
     51775        Salem city
-    51780        South Boston city                (After 1990, part of Halifax County)
+    51780        South Boston city
     51790        Staunton city
     51800        Suffolk city
     51810        Virginia Beach city

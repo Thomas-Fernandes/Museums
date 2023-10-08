@@ -96,6 +96,22 @@ finances <- museums %>%
 #musee
 musee <- museums %>%
   select(`Museum ID`, `Museum Name`, `Phone Number`, `Street Address (Administrative Location)`) %>%
-  rename(`Nom` = `Museum Name`,
+  rename(`ID_Musee` = `Museum ID`,
+         `Nom` = `Museum Name`,
          `Telephone` = `Phone Number`,
          `Adresse` = `Street Address (Administrative Location)`)
+
+#geocodes
+geocodes <- museums %>%
+  select(`Latitude (Administrative Location)`, `Longitude (Administrative Location)`) %>%
+  rename(`Latitude` = `Latitude (Administrative Location)`,
+         `Longitude` = `Longitude (Administrative Location)`)
+
+#-------------------#
+#   Foreign Keys    #
+#-------------------#
+
+#musee
+musee <- musee %>%
+  mutate(RefType = museums$`Museum Type`[match(`ID_Musee`, museums$`Museum ID`)]) %>%
+  mutate(RefInstitution = museums$`Institution Name`[match(`ID_Musee`, museums$`Museum ID`)])

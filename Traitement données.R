@@ -43,7 +43,9 @@ type <- museums %>%
 institution <- museums %>% 
   select(`Institution Name`) %>% 
   unique() %>%
-  rename(`Nom Institution` = `Institution Name`)
+  rename(`Nom Institution` = `Institution Name`) %>%
+  mutate(`ID_Institution` = row_number()) %>%
+  relocate(`ID_Institution`, .before = 1)
 
 #locale code (NCES)
 localecode_nces <- museums %>% 
@@ -89,7 +91,7 @@ ville <- museums %>%
 
 #finances (on doit créer la PK, on fait un AUTO_INCREMENT)
 finances <- museums %>%
-  select(`Tax Period`, `Income`, `Revenue`) %>%
+  select(`Tax Period`, `Income`, `Revenue`, `Museum ID`) %>%
   mutate(`ID_Finances` = row_number()) %>%
   relocate(`ID_Finances`, .before = 1)
 
@@ -100,6 +102,11 @@ musee <- museums %>%
          `Nom` = `Museum Name`,
          `Telephone` = `Phone Number`,
          `Adresse` = `Street Address (Administrative Location)`)
+
+#On ajoute refFinances dans musee
+musee <- musee %>%
+  mutate(RefFinances = finances$`ID_Finances`[match(`ID_Musee`, finances$`Museum ID`)])
+
 
 #geocodes
 geocodes <- museums %>%

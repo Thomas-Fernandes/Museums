@@ -37,7 +37,9 @@ museums$`State Code (FIPS)`[museums$`State Code (FIPS)` == 90] <- 9
 type <- museums %>% 
   select(`Museum Type`) %>% 
   unique() %>%
-  rename(TypeMusee = `Museum Type`)
+  rename(TypeMusee = `Museum Type`) %>%
+  mutate(`ID_TypeMusee` = row_number()) %>%
+  relocate(`ID_TypeMusee`, .before = 1)
 
  #institutions
 institution <- museums %>% 
@@ -103,22 +105,10 @@ musee <- museums %>%
          `Telephone` = `Phone Number`,
          `Adresse` = `Street Address (Administrative Location)`)
 
-#On ajoute refFinances dans musee
-musee <- musee %>%
-  mutate(RefFinances = finances$`ID_Finances`[match(`ID_Musee`, finances$`Museum ID`)])
-
-
 #geocodes
-geocodes <- museums %>%
-  select(`Latitude (Administrative Location)`, `Longitude (Administrative Location)`) %>%
-  rename(`Latitude` = `Latitude (Administrative Location)`,
-         `Longitude` = `Longitude (Administrative Location)`)
 
 #-------------------#
 #   Foreign Keys    #
 #-------------------#
 
-#musee
-musee <- musee %>%
-  mutate(RefType = museums$`Museum Type`[match(`ID_Musee`, museums$`Museum ID`)]) %>%
-  mutate(RefInstitution = museums$`Institution Name`[match(`ID_Musee`, museums$`Museum ID`)])
+

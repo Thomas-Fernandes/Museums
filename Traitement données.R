@@ -105,7 +105,7 @@ musee <- museums %>%
          `Telephone` = `Phone Number`,
          `Adresse` = `Street Address (Administrative Location)`)
 
-#geocodes
+
 
 #-------------------#
 #   Foreign Keys    #

@@ -1,20 +1,20 @@
-CREATE DATABASE Musees;
+CREATE DATABASE IF NOT EXISTS Musees;
 
 USE Musees;
 
-CREATE TABLE institution (
+CREATE TABLE IF NOT EXISTS institution (
     ID_Institution INT NOT NULL AUTO_INCREMENT,
     NomInstitution VARCHAR(100),
     PRIMARY KEY (ID_Institution)
 );
 
-CREATE TABLE type (
+CREATE TABLE IF NOT EXISTS type (
     ID_Type INT NOT NULL AUTO_INCREMENT,
     TypeMusee VARCHAR(100) NOT NULL,
     PRIMARY KEY (ID_Type)
 );
 
-CREATE TABLE finances (
+CREATE TABLE IF NOT EXISTS finances (
     ID_Finance INT NOT NULL AUTO_INCREMENT,
     TaxPeriod VARCHAR(255),
     Income DOUBLE,
@@ -22,7 +22,7 @@ CREATE TABLE finances (
     PRIMARY KEY (ID_Finance)
 );
 
-CREATE TABLE musee (
+CREATE TABLE IF NOT EXISTS musee (
     ID_Musee INT NOT NULL AUTO_INCREMENT,
     Nom VARCHAR(255) NOT NULL,
     PhoneNumber INT,
@@ -36,37 +36,39 @@ CREATE TABLE musee (
     FOREIGN KEY (RefType) REFERENCES type (ID_Type)
 );
 
-CREATE TABLE ville (
+CREATE TABLE IF NOT EXISTS ville (
     ID_ZipCode INT NOT NULL,
     Nom VARCHAR(255) NOT NULL,
-    PRIMARY KEY (ID_ZipCode)
+    RefState INT NOT NULL,
+    PRIMARY KEY (ID_ZipCode),
+    FOREIGN KEY (RefState) REFERENCES statecode_fips (ID_State)
 );
 
-CREATE TABLE localecode_nces (
+CREATE TABLE IF NOT EXISTS localecode_nces (
     ID_Locale INT NOT NULL AUTO_INCREMENT,
     Nom VARCHAR(255) NOT NULL,
     PRIMARY KEY (ID_Locale)
 );
 
-CREATE TABLE countycode_fips (
+CREATE TABLE IF NOT EXISTS countycode_fips (
     ID_County INT NOT NULL AUTO_INCREMENT,
     Nom VARCHAR(255) NOT NULL,
     PRIMARY KEY (ID_County)
 );
 
-CREATE TABLE statecode_fips (
+CREATE TABLE IF NOT EXISTS statecode_fips (
     ID_State INT NOT NULL AUTO_INCREMENT,
     Nom VARCHAR(255) NOT NULL,
     PRIMARY KEY (ID_State)
 );
 
-CREATE TABLE regioncode_aam (
+CREATE TABLE IF NOT EXISTS regioncode_aam (
     ID_Region INT NOT NULL AUTO_INCREMENT,
     Nom VARCHAR(255) NOT NULL,
     PRIMARY KEY (ID_Region)
 );
 
-CREATE TABLE geocodes (
+CREATE TABLE IF NOT EXISTS geocodes (
     RefMusee INT NOT NULL,
     RefCity INT NOT NULL,
     RefLocale INT NOT NULL,

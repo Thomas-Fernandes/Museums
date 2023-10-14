@@ -38,8 +38,8 @@ type <- museums %>%
   select(`Museum Type`) %>% 
   unique() %>%
   rename(TypeMusee = `Museum Type`) %>%
-  mutate(`ID_TypeMusee` = row_number()) %>%
-  relocate(`ID_TypeMusee`, .before = 1)
+  mutate(`ID_Type` = row_number()) %>%
+  relocate(`ID_Type`, .before = 1)
 
  #institutions
 institution <- museums %>% 
@@ -99,11 +99,19 @@ finances <- museums %>%
 
 #musee
 musee <- museums %>%
-  select(`Museum ID`, `Museum Name`, `Phone Number`, `Street Address (Administrative Location)`) %>%
+  select(`Museum ID`, `Museum Name`, `Phone Number`, `Street Address (Administrative Location)`, `Museum Type`, `Institution Name`) %>%
   rename(`ID_Musee` = `Museum ID`,
          `Nom` = `Museum Name`,
          `Telephone` = `Phone Number`,
-         `Adresse` = `Street Address (Administrative Location)`)
+         `Adresse` = `Street Address (Administrative Location)`) %>%
+  mutate(`RefType` = type$ID_Type[match(`Museum Type`, type$TypeMusee)]) %>%
+  select(-`Museum Type`) %>%
+  mutate(`RefInstitution` = institution$ID_Institution[match(`Institution Name`, institution$`Nom Institution`)]) %>%
+  select(-`Institution Name`)
+
+# On ajoute RefState à la table ville
+ville <- ville %>%
+  mutate(`RefState` = substr(`ID_ZIP_Code`, 1, 2))
 
 
 

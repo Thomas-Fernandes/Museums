@@ -95,7 +95,8 @@ localecode_nces <- museums %>%
     `Locale Code (NCES)` == 2 ~ "Suburb",
     `Locale Code (NCES)` == 3 ~ "Town",
     `Locale Code (NCES)` == 4 ~ "Rural"
-  ))
+  )) %>%
+  rename(`ID_Locale` = `Locale Code (NCES)`)
 
 #State Code (FIPS)
 statecode_FIPS <- read_csv("Data/Raw/State_Code_FIPS.csv") %>%

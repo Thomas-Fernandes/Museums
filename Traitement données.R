@@ -1,18 +1,52 @@
 library(readr)
 library(readxl)
 library(dplyr)
+library(stringr)
 
 #------------------#
 # Importation data #
 #------------------#
 
-County_code <- read_csv("Data/Raw/County-code.csv")
 museums <- read_csv("Data/Raw/museums.csv")
 
 # Dans le fichier museums, lorsque "State Code (FIPS)" = 60, on met 6, 80 on met 8 et 90 on met 9
 museums$`State Code (FIPS)`[museums$`State Code (FIPS)` == 60] <- 6
 museums$`State Code (FIPS)`[museums$`State Code (FIPS)` == 80] <- 8
 museums$`State Code (FIPS)`[museums$`State Code (FIPS)` == 90] <- 9
+
+#Suppression abréviations
+state_abbreviations <- c('AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI',
+                         'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI',
+                         'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC',
+                         'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT',
+                         'VT', 'VA', 'WA', 'WV', 'WI', 'WY')
+
+state_names <- c('ALABAMA', 'ALASKA', 'ARIZONA', 'ARKANSAS', 'CALIFORNIA', 'COLORADO',
+                 'CONNECTICUT', 'DELAWARE', 'FLORIDA', 'GEORGIA', 'HAWAII', 'IDAHO',
+                 'ILLINOIS', 'INDIANA', 'IOWA', 'KANSAS', 'KENTUCKY', 'LOUISIANA', 'MAINE',
+                 'MARYLAND', 'MASSACHUSETTS', 'MICHIGAN', 'MINNESOTA', 'MISSISSIPPI', 'MISSOURI',
+                 'MONTANA', 'NEBRASKA', 'NEVADA', 'NEW HAMPSHIRE', 'NEW JERSEY', 'NEW MEXICO',
+                 'NEW YORK', 'NORTH CAROLINA', 'NORTH DAKOTA', 'OHIO', 'OKLAHOMA', 'OREGON',
+                 'PENNSYLVANIA', 'RHODE ISLAND', 'SOUTH CAROLINA', 'SOUTH DAKOTA', 'TENNESSEE',
+                 'TEXAS', 'UTAH', 'VERMONT', 'VIRGINIA', 'WASHINGTON', 'WEST VIRGINIA', 'WISCONSIN', 'WYOMING')
+
+museums$`State (Administrative Location)` <- state_names[match(museums$`State (Administrative Location)`, state_abbreviations)]
+
+
+#Traitement manuel des erreurs
+museums$`State (Administrative Location)` <- ifelse(is.na(museums$`State (Administrative Location)`),
+                                                    museums$`State (Physical Location)`,
+                                                    museums$`State (Administrative Location)`)
+
+museums$`State (Administrative Location)` <- ifelse(museums$`State Code (FIPS)` == 51, "VIRGINIA",
+                                             ifelse(museums$`State Code (FIPS)` == 13, "GEORGIA",
+                                             ifelse(museums$`State Code (FIPS)` == 11, "DISTRICT OF COLUMBIA",
+                                             ifelse(museums$`State Code (FIPS)` == 24, "MARYLAND",
+                                             ifelse(museums$`State Code (FIPS)` == 2, "ALASKA",
+                                             ifelse(museums$`State Code (FIPS)` == 11, "DISTRICT OF COLUMBIA",
+                                             museums$`State (Administrative Location)`))))))
+
+museums <- museums[museums$`City (Administrative Location)` != "CHATSWORTH", ]
 
 
 #Pré-traitement
@@ -41,7 +75,7 @@ type <- museums %>%
   mutate(`ID_Type` = row_number()) %>%
   relocate(`ID_Type`, .before = 1)
 
- #institutions
+#institutions
 institution <- museums %>% 
   select(`Institution Name`) %>% 
   unique() %>%
@@ -63,7 +97,16 @@ localecode_nces <- museums %>%
 #State Code (FIPS)
 statecode_FIPS <- read_csv("Data/Raw/State_Code_FIPS.csv") %>%
   rename(`ID_State` = `Country-level FIPS code`,
-         `Nom` = `Place name`)
+         `Nom` = `Place name`) %>%
+  mutate(ID_State = as.numeric(ID_State))
+
+#Jointure pour y ajouter le region code (AAM), on récupère le code AAM depuis la table museums
+statecode_FIPS <- statecode_FIPS %>%
+  left_join(museums %>% select(`State Code (FIPS)`, `Region Code (AAM)`) %>% unique(), by = c("ID_State" = "State Code (FIPS)"))
+
+#On renomme en RefRegion
+statecode_FIPS <- statecode_FIPS %>%
+  rename(`RefRegion` = `Region Code (AAM)`)
 
 #Region Code (AAM)
 regioncode_aam <- museums %>%
@@ -79,27 +122,17 @@ regioncode_aam <- museums %>%
     `ID_Region` == 6 ~ "Western"
   ))
 
-#County Code (FIPS)
-countycode_fips <- County_code %>%
-  rename(`ID_County` = `Country-level FIPS code`,
-         `Nom` = `Place name`)
-
 #ville
 ville <- museums %>% 
-  select(`Zip Code (Administrative Location)`, `City (Administrative Location)`) %>% 
+  select(`Zip Code (Administrative Location)`, `City (Administrative Location)`, `State (Administrative Location)`) %>% 
   unique() %>%
   rename(`Nom` = `City (Administrative Location)`,
          `ID_ZIP_Code` = `Zip Code (Administrative Location)`)
-
-#finances (on doit créer la PK, on fait un AUTO_INCREMENT)
-finances <- museums %>%
-  select(`Tax Period`, `Income`, `Revenue`, `Museum ID`) %>%
-  mutate(`ID_Finances` = row_number()) %>%
-  relocate(`ID_Finances`, .before = 1)
-
 #musee
 musee <- museums %>%
-  select(`Museum ID`, `Museum Name`, `Phone Number`, `Street Address (Administrative Location)`, `Museum Type`, `Institution Name`) %>%
+  select(`Museum ID`, `Museum Name`, `Phone Number`, `Street Address (Administrative Location)`,
+         `Museum Type`, `Institution Name`, `City (Administrative Location)`,
+         `Latitude`, `Longitude`, `Employer ID Number`, `Tax Period`, `Income`, `Revenue`) %>%
   rename(`ID_Musee` = `Museum ID`,
          `Nom` = `Museum Name`,
          `Telephone` = `Phone Number`,
@@ -107,16 +140,10 @@ musee <- museums %>%
   mutate(`RefType` = type$ID_Type[match(`Museum Type`, type$TypeMusee)]) %>%
   select(-`Museum Type`) %>%
   mutate(`RefInstitution` = institution$ID_Institution[match(`Institution Name`, institution$`Nom Institution`)]) %>%
-  select(-`Institution Name`)
+  select(-`Institution Name`) %>% # On ajoute RefVille
+  mutate(`RefVille` = ville$ID_ZIP_Code[match(`City (Administrative Location)`, ville$Nom)]) %>%
+  select(-`City (Administrative Location)`)
 
 # On ajoute RefState à la table ville
 ville <- ville %>%
-  mutate(`RefState` = substr(`ID_ZIP_Code`, 1, 2))
-
-
-
-#-------------------#
-#   Foreign Keys    #
-#-------------------#
-
-
+  mutate(`RefState` = statecode_FIPS$ID_State[match(`State (Administrative Location)`, statecode_FIPS$Nom)])

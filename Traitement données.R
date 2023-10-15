@@ -14,6 +14,9 @@ museums$`State Code (FIPS)`[museums$`State Code (FIPS)` == 60] <- 6
 museums$`State Code (FIPS)`[museums$`State Code (FIPS)` == 80] <- 8
 museums$`State Code (FIPS)`[museums$`State Code (FIPS)` == 90] <- 9
 
+#suppression des lignes sans locale code NCES
+museums <- museums[!is.na(museums$`Locale Code (NCES)`),]
+
 #Suppression abréviations
 state_abbreviations <- c('AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI',
                          'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI',
@@ -67,7 +70,7 @@ museums <- museums[museums$`City (Administrative Location)` != "CHATSWORTH", ]
 #   Tables    #
 #-------------#
 
-#musees
+#type
 type <- museums %>% 
   select(`Museum Type`) %>% 
   unique() %>%
@@ -102,10 +105,7 @@ statecode_FIPS <- read_csv("Data/Raw/State_Code_FIPS.csv") %>%
 
 #Jointure pour y ajouter le region code (AAM), on récupère le code AAM depuis la table museums
 statecode_FIPS <- statecode_FIPS %>%
-  left_join(museums %>% select(`State Code (FIPS)`, `Region Code (AAM)`) %>% unique(), by = c("ID_State" = "State Code (FIPS)"))
-
-#On renomme en RefRegion
-statecode_FIPS <- statecode_FIPS %>%
+  left_join(museums %>% select(`State Code (FIPS)`, `Region Code (AAM)`) %>% unique(), by = c("ID_State" = "State Code (FIPS)")) %>%
   rename(`RefRegion` = `Region Code (AAM)`)
 
 #Region Code (AAM)
@@ -127,7 +127,10 @@ ville <- museums %>%
   select(`Zip Code (Administrative Location)`, `City (Administrative Location)`, `State (Administrative Location)`) %>% 
   unique() %>%
   rename(`Nom` = `City (Administrative Location)`,
-         `ID_ZIP_Code` = `Zip Code (Administrative Location)`)
+         `ID_ZIP_Code` = `Zip Code (Administrative Location)`) %>%
+  mutate(`RefState` = statecode_FIPS$ID_State[match(`State (Administrative Location)`, statecode_FIPS$Nom)]) %>%
+  select(-`State (Administrative Location)`)
+
 #musee
 musee <- museums %>%
   select(`Museum ID`, `Museum Name`, `Phone Number`, `Street Address (Administrative Location)`,
@@ -140,10 +143,32 @@ musee <- museums %>%
   mutate(`RefType` = type$ID_Type[match(`Museum Type`, type$TypeMusee)]) %>%
   select(-`Museum Type`) %>%
   mutate(`RefInstitution` = institution$ID_Institution[match(`Institution Name`, institution$`Nom Institution`)]) %>%
-  select(-`Institution Name`) %>% # On ajoute RefVille
+  select(-`Institution Name`) %>%
   mutate(`RefVille` = ville$ID_ZIP_Code[match(`City (Administrative Location)`, ville$Nom)]) %>%
   select(-`City (Administrative Location)`)
 
-# On ajoute RefState à la table ville
-ville <- ville %>%
-  mutate(`RefState` = statecode_FIPS$ID_State[match(`State (Administrative Location)`, statecode_FIPS$Nom)])
+
+#-------------#
+# Exportation #
+#-------------#
+
+#type
+write_csv(type, "Data/Processed/type.csv")
+
+#institutions
+write_csv(institution, "Data/Processed/institution.csv")
+
+#locale code (NCES)
+write_csv(localecode_nces, "Data/Processed/localecode_nces.csv")
+
+#State Code (FIPS)
+write_csv(statecode_FIPS, "Data/Processed/statecode_FIPS.csv")
+
+#Region Code (AAM)
+write_csv(regioncode_aam, "Data/Processed/regioncode_aam.csv")
+
+#ville
+write_csv(ville, "Data/Processed/ville.csv")
+
+#musee
+write_csv(musee, "Data/Processed/musee.csv")

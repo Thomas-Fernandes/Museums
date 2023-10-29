@@ -1,11 +1,12 @@
-Musées
+Titre : Analyse du Secteur Culturel Américain
 
-- Thomas Fernandes
-- Vanessa Kenniche
+Chargé de Projet :
 
-Description du projet
+    Thomas Fernandes
+    Vanessa Kenniche
 
-Notre projet s'intéresse à l'analyse des données du secteur culturel américain, en se basant sur un ensemble de donnéesde l'agence gouvernementale "Institute of Museum and Library Services", fournissant des informations détaillées sur les musées et les organisations connexes du pays (Zoo et aquariums). Notre analyse portera sur des aspects tels que la répartition géographique des musées, la diversité des types de musées dans différentes régions, ainsi que des aspects financiers tels que les revenus et les tendances de financement.
+Description du Projet :
+Notre étude se concentre sur l'analyse approfondie des données du secteur culturel aux États-Unis, basée sur un ensemble de données fourni par l'"Institute of Museum and Library Services". Ce jeu de données offre des informations détaillées sur les musées ainsi que les organisations connexes telles que les zoos et les aquariums. Notre analyse portera principalement sur la répartition géographique des établissements culturels, la diversité des types de musées à travers les différentes régions, et des aspects financiers tels que les revenus.
 
 Description des tables :
 

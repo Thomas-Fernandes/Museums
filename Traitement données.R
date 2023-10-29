@@ -51,6 +51,11 @@ museums$`State (Administrative Location)` <- ifelse(museums$`State Code (FIPS)` 
 
 museums <- museums[museums$`City (Administrative Location)` != "CHATSWORTH", ]
 
+#Erreurs finances
+museums <- museums[-which(museums$`Employer ID Number` == 113327144 & is.na(museums$`Tax Period`) & is.na(museums$`Income`) & is.na(museums$`Revenue`)), ]
+museums <- museums[-which(museums$`Employer ID Number` == 232773714 & is.na(museums$`Tax Period`) & is.na(museums$`Income`) & is.na(museums$`Revenue`)), ]
+museums <- museums[-which(museums$`Employer ID Number` == 912054439 & museums$`Tax Period` == 201406 & museums$`Income` == 0 & museums$`Revenue` == 0), ]
+museums <- museums[-which(is.na(museums$`Employer ID Number`) & museums$`Tax Period` == 201412 & museums$`Income` == 14063 & museums$`Revenue` == 14063), ]
 
 #Pré-traitement
 #museums <- museums[!is.na(museums$`County Code (FIPS)`),]
@@ -132,11 +137,17 @@ ville <- museums %>%
   mutate(`RefState` = statecode_FIPS$ID_State[match(`State (Administrative Location)`, statecode_FIPS$Nom)]) %>%
   select(-`State (Administrative Location)`)
 
+#finances
+finances <- museums %>%
+  select(`Employer ID Number`, `Tax Period`, `Income`, `Revenue`) %>%
+  distinct() %>%
+  rename(`Employer ID` = `Employer ID Number`)
+
 #musee
 musee <- museums %>%
   select(`Museum ID`, `Museum Name`, `Phone Number`, `Street Address (Administrative Location)`,
-         `Museum Type`, `Institution Name`, `City (Administrative Location)`,
-         `Latitude`, `Longitude`, `Employer ID Number`, `Tax Period`, `Income`, `Revenue`) %>%
+         `Museum Type`, `Institution Name`, `City (Administrative Location)`, `Employer ID Number`,
+         `Latitude`, `Longitude`) %>%
   rename(`ID_Musee` = `Museum ID`,
          `Nom` = `Museum Name`,
          `Telephone` = `Phone Number`,
@@ -146,7 +157,9 @@ musee <- museums %>%
   mutate(`RefInstitution` = institution$ID_Institution[match(`Institution Name`, institution$`Nom Institution`)]) %>%
   select(-`Institution Name`) %>%
   mutate(`RefVille` = ville$ID_ZIP_Code[match(`City (Administrative Location)`, ville$Nom)]) %>%
-  select(-`City (Administrative Location)`)
+  mutate(`RefFinances` = finances$`Employer ID`[match(`Employer ID Number`, finances$`Employer ID`)]) %>%
+  select(-`Employer ID Number`)
+
 
 
 #-------------#

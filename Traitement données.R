@@ -57,19 +57,17 @@ museums <- museums[-which(museums$`Employer ID Number` == 232773714 & is.na(muse
 museums <- museums[-which(museums$`Employer ID Number` == 912054439 & museums$`Tax Period` == 201406 & museums$`Income` == 0 & museums$`Revenue` == 0), ]
 museums <- museums[-which(is.na(museums$`Employer ID Number`) & museums$`Tax Period` == 201412 & museums$`Income` == 14063 & museums$`Revenue` == 14063), ]
 
-#Pré-traitement
-#museums <- museums[!is.na(museums$`County Code (FIPS)`),]
-#museums <- museums[!is.na(museums$`Locale Code (NCES)`),]
+#Supression des lignes où Employer ID Number est NA
+museums <- museums[!is.na(museums$`Employer ID Number`),]
 
-#Ccolonne "County Code (FIPS)" en 3 caractères (ex: 001)
-#museums$`County Code (FIPS)` <- formatC(museums$`County Code (FIPS)`, width = 3, flag = "0")
-#museums$`State Code (FIPS)` <- formatC(museums$`State Code (FIPS)`, width = 2, flag = "0")
+#Tax Period (YYYYMM) en date (YYYY-MM-DD)
+museums$`Tax Period` <- ifelse(!is.na(museums$`Tax Period`), 
+                              ifelse(substr(museums$`Tax Period`, 5, 6) == "02",
+                                     sprintf("%s-%s-28", substr(museums$`Tax Period`, 1, 4), substr(museums$`Tax Period`, 5, 6)),
+                                     sprintf("%s-%s-30", substr(museums$`Tax Period`, 1, 4), substr(museums$`Tax Period`, 5, 6))),
+                              NA)
 
-#Numéro de state code (FIPS) au début du county code (FIPS)
-#museums$`County Code (FIPS)` <- paste0(museums$`State Code (FIPS)`, museums$`County Code (FIPS)`)
 
-#On compte combien de musée n'ont pas de coordonnées
-#sum(is.na(museums$`Tax Period`))
 
 #-------------#
 #   Tables    #
@@ -85,11 +83,13 @@ type <- museums %>%
 
 #institutions
 institution <- museums %>% 
+  filter(!is.na(`Institution Name`)) %>% 
   select(`Institution Name`) %>% 
   unique() %>%
   rename(`Nom Institution` = `Institution Name`) %>%
   mutate(`ID_Institution` = row_number()) %>%
   relocate(`ID_Institution`, .before = 1)
+
 
 #locale code (NCES)
 localecode_nces <- museums %>% 
@@ -147,7 +147,7 @@ finances <- museums %>%
 musee <- museums %>%
   select(`Museum ID`, `Museum Name`, `Phone Number`, `Street Address (Administrative Location)`,
          `Museum Type`, `Institution Name`, `City (Administrative Location)`, `Employer ID Number`,
-         `Latitude`, `Longitude`) %>%
+         `Latitude`, `Longitude`, `Locale Code (NCES)`) %>%
   rename(`ID_Musee` = `Museum ID`,
          `Nom` = `Museum Name`,
          `Telephone` = `Phone Number`,
@@ -157,8 +157,11 @@ musee <- museums %>%
   mutate(`RefInstitution` = institution$ID_Institution[match(`Institution Name`, institution$`Nom Institution`)]) %>%
   select(-`Institution Name`) %>%
   mutate(`RefVille` = ville$ID_ZIP_Code[match(`City (Administrative Location)`, ville$Nom)]) %>%
+  select(-`City (Administrative Location)`) %>%
   mutate(`RefFinances` = finances$`Employer ID`[match(`Employer ID Number`, finances$`Employer ID`)]) %>%
-  select(-`Employer ID Number`)
+  select(-`Employer ID Number`) %>%
+  mutate(`RefLocale` = localecode_nces$ID_Locale[match(`Locale Code (NCES)`, localecode_nces$ID_Locale)]) %>%
+  select(-`Locale Code (NCES)`)
 
 
 
@@ -167,22 +170,25 @@ musee <- museums %>%
 #-------------#
 
 #type
-write_csv(type, "Data/Processed/type.csv")
+write_csv(type, "Data/Processed/type_musee.csv", na = "NULL")
 
 #institutions
-write_csv(institution, "Data/Processed/institution.csv")
+write_csv(institution, "Data/Processed/institution.csv", na = "NULL")
 
 #locale code (NCES)
-write_csv(localecode_nces, "Data/Processed/localecode_nces.csv")
+write_csv(localecode_nces, "Data/Processed/type_environnement.csv", na = "NULL")
 
 #State Code (FIPS)
-write_csv(statecode_FIPS, "Data/Processed/statecode_FIPS.csv")
+write_csv(statecode_FIPS, "Data/Processed/etat.csv", na = "NULL")
 
 #Region Code (AAM)
-write_csv(regioncode_aam, "Data/Processed/regioncode_aam.csv")
+write_csv(regioncode_aam, "Data/Processed/region.csv", na = "NULL")
 
 #ville
 write_csv(ville, "Data/Processed/ville.csv")
 
+#finances
+write_csv(finances, "Data/Processed/finance.csv", na = "NULL")
+
 #musee
-write_csv(musee, "Data/Processed/musee.csv")
+write_csv(musee, "Data/Processed/musee.csv", na = "NULL")

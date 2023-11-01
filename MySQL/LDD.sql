@@ -2,64 +2,70 @@ CREATE DATABASE IF NOT EXISTS Musees;
 
 USE Musees;
 
-CREATE TABLE IF NOT EXISTS type (
-    ID_Type INT NOT NULL AUTO_INCREMENT,
-    Type_Musee VARCHAR(100) NOT NULL,
+CREATE TABLE IF NOT EXISTS type_musee (
+    ID_Type TINYINT NOT NULL AUTO_INCREMENT,
+    Nom_Type VARCHAR(50) NOT NULL,
     PRIMARY KEY (ID_Type)
 );
 
 CREATE TABLE IF NOT EXISTS institution (
-    ID_Institution INT NOT NULL AUTO_INCREMENT,
+    ID_Institution SMALLINT NOT NULL AUTO_INCREMENT,
     Nom_Institution VARCHAR(100),
     PRIMARY KEY (ID_Institution)
 );
 
-CREATE TABLE IF NOT EXISTS localecode_nces (
-    ID_Locale INT NOT NULL AUTO_INCREMENT,
-    Nom_locale VARCHAR(10) NOT NULL,
-    PRIMARY KEY (ID_Locale)
+CREATE TABLE IF NOT EXISTS type_environnement (
+    ID_environnement TINYINT NOT NULL AUTO_INCREMENT,
+    Nom_environnement VARCHAR(6) NOT NULL,
+    PRIMARY KEY (ID_environnement)
 );
 
-CREATE TABLE IF NOT EXISTS regioncode_aam (
-    ID_Region INT NOT NULL AUTO_INCREMENT,
-    Nom VARCHAR(255) NOT NULL,
+CREATE TABLE IF NOT EXISTS region (
+    ID_Region TINYINT NOT NULL AUTO_INCREMENT,
+    Nom_Region VARCHAR(14) NOT NULL,
     PRIMARY KEY (ID_Region)
 );
 
-CREATE TABLE IF NOT EXISTS statecode_fips (
-    ID_State INT NOT NULL AUTO_INCREMENT,
-    Nom VARCHAR(255) NOT NULL,
-    RefRegion INT NOT NULL,
-    PRIMARY KEY (ID_State),
-    FOREIGN KEY (RefRegion) REFERENCES regioncode_aam (ID_Region)
+CREATE TABLE IF NOT EXISTS etat (
+    ID_Etat TINYINT NOT NULL AUTO_INCREMENT,
+    Nom_Etat VARCHAR(20) NOT NULL,
+    RefRegion TINYINT NOT NULL,
+    PRIMARY KEY (ID_Etat),
+    FOREIGN KEY (RefRegion) REFERENCES region (ID_Region)
 );
 
 CREATE TABLE IF NOT EXISTS ville (
-    ID_ZipCode INT NOT NULL,
-    Nom VARCHAR(255) NOT NULL,
-    RefState INT NOT NULL,
-    PRIMARY KEY (ID_ZipCode),
-    FOREIGN KEY (RefState) REFERENCES statecode_fips (ID_State)
+    ID_Ville MEDIUMINT NOT NULL,
+    Nom VARCHAR(50) NOT NULL,
+    RefEtat TINYINT NOT NULL,
+    PRIMARY KEY (ID_Ville),
+    FOREIGN KEY (RefEtat) REFERENCES etat (ID_Etat)
+);
+
+CREATE TABLE IF NOT EXISTS finance (
+    Employer_ID INT NOT NULL,
+    Tax_Period DATE,
+    Chiffre_Affaires BIGINT,
+    Benefice BIGINT,
+    PRIMARY KEY (Employer_ID)
 );
 
 CREATE TABLE IF NOT EXISTS musee (
-    ID_Musee INT NOT NULL AUTO_INCREMENT,
-    Nom VARCHAR(255) NOT NULL,
-    PhoneNumber INT,
-    Address VARCHAR(255),
+    ID_Musee BIGINT NOT NULL AUTO_INCREMENT,
+    Nom_musee VARCHAR(150) NOT NULL,
+    Telephone BIGINT,
+    Adresse VARCHAR(100),
     Latitude FLOAT,
     Longitude FLOAT,
-    Employer_ID INT,
-    Tax_Period DATE,
-    Income FLOAT,
-    Revenue FLOAT,
-    RefType INT NOT NULL,
-    RefInstitution INT NOT NULL,
-    RefVille INT NOT NULL,
-    RefLocale INT NOT NULL,
+    RefType_musee TINYINT NOT NULL,
+    RefInstitution SMALLINT,
+    RefVille MEDIUMINT NOT NULL,
+    RefType_environnement TINYINT NOT NULL,
+    RefFinance INT NOT NULL,
     PRIMARY KEY (ID_Musee),
-    FOREIGN KEY (RefType) REFERENCES type (ID_Type),
+    FOREIGN KEY (RefType_musee) REFERENCES type_musee (ID_Type),
     FOREIGN KEY (RefInstitution) REFERENCES institution (ID_Institution),
-    FOREIGN KEY (RefVille) REFERENCES ville (ID_ZipCode),
-    FOREIGN KEY (RefLocale) REFERENCES localecode_nces (ID_Locale)
+    FOREIGN KEY (RefVille) REFERENCES ville (ID_Ville),
+    FOREIGN KEY (RefType_environnement) REFERENCES type_environnement (ID_environnement),
+    FOREIGN KEY (RefFinance) REFERENCES finance (Employer_ID)
 );

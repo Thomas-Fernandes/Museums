@@ -35,23 +35,38 @@ CREATE TABLE IF NOT EXISTS etat (
 );
 
 CREATE TABLE IF NOT EXISTS ville (
-    ID_Ville MEDIUMINT NOT NULL,
+    ID_Ville MEDIUMINT NOT NULL AUTO_INCREMENT,
     Nom VARCHAR(50) NOT NULL,
     RefEtat TINYINT NOT NULL,
     PRIMARY KEY (ID_Ville),
     FOREIGN KEY (RefEtat) REFERENCES etat (ID_Etat)
 );
 
+CREATE TABLE IF NOT EXISTS Zip_Code (
+    ID_Zip_Code MEDIUMINT NOT NULL,
+    RefVille MEDIUMINT NOT NULL,
+    PRIMARY KEY (ID_Zip_Code),
+    FOREIGN KEY (RefVille) REFERENCES ville (ID_Ville)
+);
+
+CREATE TABLE IF NOT EXISTS employeur (
+    ID_employeur INT NOT NULL,
+    Nom_employeur VARCHAR(50),
+    PRIMARY KEY (ID_employeur)
+);
+
 CREATE TABLE IF NOT EXISTS finance (
-    Employer_ID INT NOT NULL,
+    ID_Finance MEDIUMINT NOT NULL AUTO_INCREMENT,
     Tax_Period DATE,
     Chiffre_Affaires BIGINT,
     Benefice BIGINT,
-    PRIMARY KEY (Employer_ID)
+    RefEmployeur INT NOT NULL,
+    PRIMARY KEY (ID_Finance),
+    FOREIGN KEY (RefEmployeur) REFERENCES employeur (ID_employeur)
 );
 
 CREATE TABLE IF NOT EXISTS musee (
-    ID_Musee BIGINT NOT NULL AUTO_INCREMENT,
+    ID_Musee BIGINT NOT NULL,
     Nom_musee VARCHAR(150) NOT NULL,
     Telephone BIGINT,
     Adresse VARCHAR(100),
@@ -59,13 +74,13 @@ CREATE TABLE IF NOT EXISTS musee (
     Longitude FLOAT,
     RefType_musee TINYINT NOT NULL,
     RefInstitution SMALLINT,
-    RefVille MEDIUMINT NOT NULL,
+    RefZip_Code MEDIUMINT NOT NULL,
     RefType_environnement TINYINT NOT NULL,
-    RefFinance INT NOT NULL,
+    RefEmployeur INT NOT NULL,
     PRIMARY KEY (ID_Musee),
     FOREIGN KEY (RefType_musee) REFERENCES type_musee (ID_Type),
     FOREIGN KEY (RefInstitution) REFERENCES institution (ID_Institution),
-    FOREIGN KEY (RefVille) REFERENCES ville (ID_Ville),
+    FOREIGN KEY (RefZip_Code) REFERENCES Zip_Code (ID_Zip_Code),
     FOREIGN KEY (RefType_environnement) REFERENCES type_environnement (ID_environnement),
-    FOREIGN KEY (RefFinance) REFERENCES finance (Employer_ID)
+    FOREIGN KEY (RefEmployeur) REFERENCES employeur (ID_employeur)
 );

@@ -1,46 +1,16 @@
-Titre : Analyse du Secteur Culturel Américain
+Titre :
+
+    Analyse du Secteur Culturel Américain
 
 Chargé de Projet :
 
     Thomas Fernandes
     Vanessa Kenniche
 
+Données :
+
+    https://www.kaggle.com/datasets/imls/museum-directory/data
+
 Description du Projet :
-Notre étude se concentre sur l'analyse approfondie des données du secteur culturel aux États-Unis, basée sur un ensemble de données fourni par l'"Institute of Museum and Library Services". Ce jeu de données offre des informations détaillées sur les musées ainsi que les organisations connexes telles que les zoos et les aquariums. Notre analyse portera principalement sur la répartition géographique des établissements culturels, la diversité des types de musées à travers les différentes régions, et des aspects financiers tels que les revenus.
 
-Description des tables :
-
-Table "type":
-
-    Description : Cette table contient les différents types de musées ou disciplines basées sur la Taxonomie Nationale des Entités Exemptées (NTEE), utilisée pour classifier les organisations à but non lucratif.
-    Colonnes : ID_Type (identifiant unique du type), Type_Musee (le nom du type de musée).
-
-Table "institution":
-
-    Description : Cette table stocke les informations relatives aux institutions liées aux musées, telles que les fondations de musées ou d'autres organisations connexes qui peuvent posséder 1 ou plusieurs musées. Un musée peut ne pas être au sein d'une institution.
-    Colonnes : ID_Institution (identifiant unique de l'institution), Nom_Institution (le nom de l'institution).
-
-Table "localecode_nces":
-
-    Description : Cette table répertorie les codes locaux spécifiques associés à chaque musée. Le "Locale Code NCES" est un système de classification géographique qui fournit des informations sur le type de zone dans laquelle se trouve un musée donné, offrant ainsi des indications sur la localisation géographique et le contexte régional du musée.
-    Colonnes : ID_Locale (identifiant unique du code local), Nom_locale (le code local spécifique).
-
-Table "regioncode_aam":
-
-    Description : Cette table stocke les codes régionaux basés sur une classification particulière de l'American Alliance of Museums (AAM).
-    Colonnes : ID_Region (identifiant unique de la région), Nom (le nom de la région).
-
-Table "statecode_fips":
-
-    Description : Cette table stocke les codes d'État basés sur le système de codification du Federal Information Processing Standards (FIPS). Il lie chaque État à une région spécifique.
-    Colonnes : ID_State (identifiant unique de l'État), Nom (le nom de l'État), RefRegion (une référence à la région à laquelle l'État est associé).
-
-Table "ville":
-
-    Description : Cette table contient des informations sur les villes, en particulier les noms de villes et les codes postaux associés à chaque État.
-    Colonnes : ID_ZipCode (le code postal de la ville), Nom (le nom de la ville), RefState (une référence à l'État auquel la ville est liée).
-
-Table "musee":
-
-    Description : Cette table est la table principale qui stocke les informations détaillées sur chaque musée.
-    Colonnes : ID_Musee (identifiant unique du musée), Nom (le nom du musée), PhoneNumber (le numéro de téléphone du musée), Address (l'adresse du musée), Latitude (la latitude géographique du musée), Longitude (la longitude géographique du musée), Employer_ID (un identifiant employeur), Tax_Period (la période fiscale du musée), Income (le revenu du musée), Revenue (le revenu du musée), RefType (une référence au type de musée), RefInstitution (une référence à l'institution liée), RefVille (une référence à la ville où se situe le musée), RefLocale (une référence au code local du musée).
+    Notre étude se concentre sur l'analyse des données du secteur culturel aux États-Unis, basée sur un ensemble de données fourni par l'"Institute of Museum and Library Services". Ce jeu de données offre des informations détaillées sur les musées ainsi que les organisations connexes telles que les zoos et les aquariums. Notre analyse portera principalement sur la répartition géographique des établissements culturels, la diversité des types de musées et autres organisations culturels à travers les différentes régions, états et villes. Nous analyserons également la dimension financière de ces établissements.

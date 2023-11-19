@@ -15,9 +15,9 @@ CREATE TABLE IF NOT EXISTS institution (
 );
 
 CREATE TABLE IF NOT EXISTS type_environnement (
-    ID_environnement TINYINT NOT NULL AUTO_INCREMENT,
-    Nom_environnement VARCHAR(6) NOT NULL,
-    PRIMARY KEY (ID_environnement)
+    ID_Environnement TINYINT NOT NULL AUTO_INCREMENT,
+    Nom_Environnement VARCHAR(6) NOT NULL,
+    PRIMARY KEY (ID_Environnement)
 );
 
 CREATE TABLE IF NOT EXISTS region (
@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS ville (
     FOREIGN KEY (RefEtat) REFERENCES etat (ID_Etat)
 );
 
-CREATE TABLE IF NOT EXISTS Zip_Code (
+CREATE TABLE IF NOT EXISTS zip_code (
     ID_Zip_Code MEDIUMINT NOT NULL,
     RefVille MEDIUMINT NOT NULL,
     PRIMARY KEY (ID_Zip_Code),
@@ -50,9 +50,9 @@ CREATE TABLE IF NOT EXISTS Zip_Code (
 );
 
 CREATE TABLE IF NOT EXISTS employeur (
-    ID_employeur INT NOT NULL,
-    Nom_employeur VARCHAR(50),
-    PRIMARY KEY (ID_employeur)
+    ID_Employeur INT NOT NULL,
+    Nom_Employeur VARCHAR(50),
+    PRIMARY KEY (ID_Employeur)
 );
 
 CREATE TABLE IF NOT EXISTS finance (
@@ -62,25 +62,25 @@ CREATE TABLE IF NOT EXISTS finance (
     Benefice BIGINT,
     RefEmployeur INT NOT NULL,
     PRIMARY KEY (ID_Finance),
-    FOREIGN KEY (RefEmployeur) REFERENCES employeur (ID_employeur)
+    FOREIGN KEY (RefEmployeur) REFERENCES employeur (ID_Employeur)
 );
 
 CREATE TABLE IF NOT EXISTS musee (
     ID_Musee BIGINT NOT NULL,
-    Nom_musee VARCHAR(150) NOT NULL,
+    Nom_Musee VARCHAR(150) NOT NULL,
     Telephone BIGINT,
     Adresse VARCHAR(100),
     Latitude FLOAT,
     Longitude FLOAT,
-    RefType_musee TINYINT NOT NULL,
+    RefType_Musee TINYINT NOT NULL,
     RefInstitution SMALLINT,
     RefZip_Code MEDIUMINT NOT NULL,
-    RefType_environnement TINYINT NOT NULL,
+    RefType_Environnement TINYINT NOT NULL,
     RefEmployeur INT NOT NULL,
     PRIMARY KEY (ID_Musee),
     FOREIGN KEY (RefType_musee) REFERENCES type_musee (ID_Type),
     FOREIGN KEY (RefInstitution) REFERENCES institution (ID_Institution),
-    FOREIGN KEY (RefZip_Code) REFERENCES Zip_Code (ID_Zip_Code),
-    FOREIGN KEY (RefType_environnement) REFERENCES type_environnement (ID_environnement),
-    FOREIGN KEY (RefEmployeur) REFERENCES employeur (ID_employeur)
+    FOREIGN KEY (RefZip_Code) REFERENCES zip_code (ID_Zip_Code),
+    FOREIGN KEY (RefType_Environnement) REFERENCES type_environnement (ID_Environnement),
+    FOREIGN KEY (RefEmployeur) REFERENCES employeur (ID_Employeur)
 );

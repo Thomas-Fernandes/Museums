@@ -216,7 +216,7 @@ write_csv(region, "Data/Processed/region.csv", na = "NULL")
 write_csv(ville, "Data/Processed/ville.csv", na = "NULL")
 
 #Zip_code
-write_csv(Zip_Code, "Data/Processed/Zip_Code.csv", na = "NULL")
+write_csv(Zip_Code, "Data/Processed/zip_code.csv", na = "NULL")
 
 #employeur
 write_csv(employeur, "Data/Processed/employeur.csv", na = "NULL")

@@ -14,3 +14,11 @@ Données :
 Description du Projet :
 
     Notre étude se concentre sur l'analyse des données du secteur culturel aux États-Unis, basée sur un ensemble de données fourni par l'"Institute of Museum and Library Services". Ce jeu de données offre des informations détaillées sur les musées ainsi que les organisations connexes telles que les zoos et les aquariums. Notre analyse portera principalement sur la répartition géographique des établissements culturels, la diversité des types de musées et autres organisations culturelles à travers les différentes régions, états et villes. Nous analyserons également la dimension financière de ces établissements.
+
+Thèmes des requêtes :
+
+    Répartition des types de musées (Arts, Histoire etc.)
+    Type de musée par zone urbaine (Combien de musées d'art dans les grandes villes ? De Zoo en campagne ?)
+    Santé financière des musées
+    Quelles sont les institutions qui gèrent le plus de musées ? Qui récoltent le plus d'argent ?
+    Analyse géographique des musées (Table des musées par état, ville, région, carte en Shiny ?)

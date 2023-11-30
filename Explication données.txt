@@ -22,3 +22,5 @@ Thèmes des requêtes :
     Santé financière des musées
     Quelles sont les institutions qui gèrent le plus de musées ? Qui récoltent le plus d'argent ?
     Analyse géographique des musées (Table des musées par état, ville, région, carte en Shiny ?)
+    Insertion de nouveaux musées
+    Rachat de musées en difficulté par des institutions plus grandes

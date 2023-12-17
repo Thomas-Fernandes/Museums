@@ -12,11 +12,16 @@ SELECT Nom_Musee
 FROM musee
 WHERE Nom_Musee LIKE '%ZOO%';
 
--- 4. Régions et etats correspondants
+-- 4. Musées qui n'ont pas de numéro de téléphone
+SELECT Nom_Musee
+FROM musee
+WHERE Telephone IS NULL;
+
+-- 5. Régions et etats correspondants
 SELECT Nom_Region, Nom_Etat FROM region
 INNER JOIN etat ON region.ID_Region = etat.RefRegion;
 
--- 5. Tous les musées du Mississippi (Optimisation avec index)
+-- 6. Tous les musées du Mississippi (Optimisation avec index)
 CREATE INDEX idx_zip_code_refville ON zip_code (RefVille);
 CREATE INDEX idx_etat_nom ON etat (Nom_Etat);
 
@@ -26,7 +31,7 @@ INNER JOIN ville ON zip_code.RefVille = ville.ID_Ville
 INNER JOIN etat ON ville.RefEtat = etat.ID_Etat
 WHERE etat.Nom_Etat = 'Mississippi';
 
--- 6. Musées qui ne font pas de bénéfices (Optimisation avec index)
+-- 7. Musées qui ne font pas de bénéfices (Optimisation avec index)
 CREATE INDEX idx_musee_refemployeur ON musee (RefEmployeur);
 CREATE INDEX idx_finance_refemployeur ON finance (RefEmployeur);
 CREATE INDEX idx_finance_benefice ON finance (Benefice);
@@ -36,7 +41,7 @@ FROM musee m
 INNER JOIN finance f ON m.RefEmployeur = f.RefEmployeur
 WHERE f.Benefice = 0;
 
--- 7. Musées qui ont une Tax Period entre 2014 et 2015 en Louisianne
+-- 8. Musées qui ont une Tax Period entre 2014 et 2015 en Louisianne
 SELECT m.Nom_Musee
 FROM musee m
 INNER JOIN zip_code z ON m.RefZip_Code = z.ID_Zip_Code
@@ -46,7 +51,7 @@ INNER JOIN finance f ON m.RefEmployeur = f.RefEmployeur
 WHERE e.Nom_Etat = 'Louisiana'
 AND YEAR(f.Tax_Period) BETWEEN 2014 AND 2015;
 
--- 8. Musées de la ville de Baton Rouge
+-- 9. Musées de la ville de Baton Rouge
 SELECT Nom_Musee
 FROM musee
 WHERE RefZip_Code IN (
@@ -59,7 +64,7 @@ WHERE RefZip_Code IN (
     )
 );
 
--- 9. Musées sans données financières en Louisianne pour les années 2014 ou 2015
+-- 10. Musées sans données financières en Louisianne pour les années 2014 ou 2015
 SELECT m.Nom_Musee
 FROM musee m
 JOIN zip_code z ON m.RefZip_Code = z.ID_Zip_Code
@@ -95,24 +100,14 @@ FROM (
 ) AS subquery
 WHERE rn = 1;
 
--- 3. Employeur ayant le plus gros chiffre d affaires et combien de musées il possède
-SELECT e.ID_Employeur, e.Nom_Employeur,
-	   f.Chiffre_Affaires AS Chiffre_Affaires, COUNT(m.ID_Musee) AS Nombre_Musees
-FROM employeur e
-INNER JOIN finance f ON e.ID_Employeur = f.RefEmployeur
-LEFT JOIN musee m ON e.ID_Employeur = m.RefEmployeur
-GROUP BY e.ID_Employeur, e.Nom_Employeur, f.Chiffre_Affaires
-ORDER BY Chiffre_Affaires DESC
-LIMIT 5;
-
--- 4. Classement des institutions par nombre de musées
+-- 3. Classement des institutions par nombre de musées
 SELECT i.Nom_Institution, COUNT(m.ID_Musee) AS Nombre_Musees
 FROM musee m
 INNER JOIN institution i ON m.RefInstitution = i.ID_Institution
 GROUP BY i.ID_Institution, i.Nom_Institution
 ORDER BY Nombre_Musees DESC;
 
--- 5. Nombre de musées par Ville
+-- 4. Nombre de musées par Ville
 SELECT ville.Nom, COUNT(musee.ID_Musee) AS NombreDeMusees
 FROM musee
 INNER JOIN zip_code ON musee.RefZip_Code = zip_code.ID_Zip_Code
@@ -120,7 +115,7 @@ INNER JOIN ville ON zip_code.RefVille = ville.ID_Ville
 GROUP BY ville.Nom
 ORDER BY NombreDeMusees DESC;
 
--- 6. Nombre de musées par Etat
+-- 5. Nombre de musées par Etat
 SELECT etat.Nom_Etat, COUNT(musee.ID_Musee) AS NombreDeMusees
 FROM musee
 INNER JOIN zip_code ON musee.RefZip_Code = zip_code.ID_Zip_Code
@@ -129,7 +124,7 @@ INNER JOIN etat ON ville.RefEtat = etat.ID_Etat
 GROUP BY etat.Nom_Etat
 ORDER BY NombreDeMusees DESC;
 
--- 7. Nombre de musées par région
+-- 6. Nombre de musées par région
 SELECT region.Nom_Region, COUNT(musee.ID_Musee) AS NombreDeMusees
 FROM musee
 INNER JOIN zip_code ON musee.RefZip_Code = zip_code.ID_Zip_Code
@@ -139,14 +134,48 @@ INNER JOIN region ON etat.RefRegion = region.ID_Region
 GROUP BY region.Nom_Region
 ORDER BY NombreDeMusees DESC;
 
--- 8. Moyenne des chiffres d'affaires par type de musée
+-- 7. Moyenne des chiffres d'affaires par type de musée
 SELECT tm.Nom_Type, AVG(f.Chiffre_Affaires) AS Moyenne_Chiffre_Affaires
 FROM musee m
 INNER JOIN type_musee tm ON m.RefType_Musee = tm.ID_Type
 INNER JOIN finance f ON m.RefEmployeur = f.RefEmployeur
 GROUP BY tm.Nom_Type;
 
--- 9. Taux d'évolution des bénéfices par rapport à l'année précédente
+-- 8. Top 5 villes ayant le plus de musées
+SELECT Nom, COUNT(ID_Musee) AS Nombre_De_Musees
+FROM ville
+JOIN zip_code ON ville.ID_Ville = zip_code.RefVille
+JOIN musee ON zip_code.ID_Zip_Code = musee.RefZip_Code
+GROUP BY Nom
+ORDER BY Nombre_De_Musees DESC
+LIMIT 5;
+
+-- 9. Pourcentage de musées par type d'environnement
+SELECT te.Nom_Environnement, COUNT(*) * 100.0 / (SELECT COUNT(*) FROM musee) AS Pourcentage
+FROM type_environnement te
+JOIN musee m ON te.ID_Environnement = m.RefType_Environnement
+GROUP BY te.Nom_Environnement;
+
+-- 10. Les musées les plus éloignés de New York
+SELECT m.Nom_Musee, e.Nom_Etat, ROUND(
+  6371000 * ACOS(
+    COS(RADIANS(40.712784)) * COS(RADIANS(m.Latitude)) * COS(RADIANS(m.Longitude) - RADIANS(-74.005941)) +
+      SIN(RADIANS(40.712784)) * SIN(RADIANS(m.Latitude))
+  ),
+  2
+) AS Distance_en_metres FROM musee m INNER JOIN zip_code z ON m.Refzip_code = z.ID_Zip_Code 
+      INNER JOIN ville v ON z.RefVille = v.ID_Ville 
+      INNER JOIN etat e ON v.RefEtat = e.ID_Etat ORDER BY Distance_en_metres DESC LIMIT 10;
+
+-- 11. Musées les plus rentable par région
+
+
+
+--
+-- Requêtes Complexes
+--
+
+--1. Taux d'évolution des bénéfices par rapport à l'année précédente
 WITH BeneficeParAnnee AS (
     SELECT YEAR(Tax_Period) AS Annee,
            AVG(Benefice) AS BeneficeMoyen
@@ -175,7 +204,7 @@ SELECT
 FROM TauxEvolution
 ORDER BY AnneeActuelle;
 
--- 10. Répartition de la santé financière des musées
+-- 2. Répartition de la santé financière des musées
 WITH ClassementMusees AS (
     SELECT Nom_Musee, Benefice,
         CASE
@@ -191,7 +220,7 @@ SELECT Statut_Benefice, COUNT(*) AS Nombre_Musees
 FROM ClassementMusees
 GROUP BY Statut_Benefice;
 
--- 11. Distance moyenne de chaque musée par rapport à Baton Rouge et Lafayette
+-- 3. Distance moyenne de chaque musée par rapport à Baton Rouge et Lafayette
 CREATE VIEW DistanceMoyenneVilles AS
 SELECT
     tm.Nom_Type AS Type_Musee,
@@ -221,7 +250,7 @@ WHERE
     m.Latitude IS NOT NULL
     AND m.Longitude IS NOT NULL;
 
--- 11. Musée de chaque type qui minimise la somme des distances depuis les deux villes
+-- 4. Musée de chaque type qui minimise la somme des distances depuis les deux villes
 SELECT
     Type_Musee,
     Nom_Musee,
@@ -235,3 +264,18 @@ FROM (
     FROM DistanceMoyenneVilles
 ) AS ClassementMusees
 WHERE Classement = 1;
+
+-- 5. Sélectionne les musées ainsi que leurs institutions même si ils n'en ont pas
+SELECT m.Nom_Musee, i.Nom_Institution
+FROM musee m
+LEFT JOIN institution i ON m.RefInstitution = i.ID_Institution;
+
+-- 6. Employeur ayant le plus gros chiffre d affaires et combien de musées il possède
+SELECT e.ID_Employeur, e.Nom_Employeur,
+	   f.Chiffre_Affaires AS Chiffre_Affaires, COUNT(m.ID_Musee) AS Nombre_Musees
+FROM employeur e
+INNER JOIN finance f ON e.ID_Employeur = f.RefEmployeur
+LEFT JOIN musee m ON e.ID_Employeur = m.RefEmployeur
+GROUP BY e.ID_Employeur, e.Nom_Employeur, f.Chiffre_Affaires
+ORDER BY Chiffre_Affaires DESC
+LIMIT 5;

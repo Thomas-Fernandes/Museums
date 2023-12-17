@@ -58,3 +58,13 @@ WHERE RefZip_Code IN (
     FROM zip_code
     WHERE RefVille = (SELECT ID_Ville FROM ville WHERE Nom = 'Port Allen')
 );
+
+-- 3. Un musée change de numéro de téléphone
+UPDATE musee
+SET Telephone = '2524220673'
+WHERE Nom_Musee = 'THREE NOTCH MUSEUM';
+
+-- 4. Le JUDSON COLLEGE ferme et tous ses musées ferment avec
+DELETE FROM musee WHERE RefInstitution IN (SELECT ID_Institution FROM institution WHERE Nom_Institution = 'JUDSON COLLEGE');
+
+DELETE FROM institution WHERE Nom_Institution = 'JUDSON COLLEGE';

@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS type_musee (
 
 CREATE TABLE IF NOT EXISTS institution (
     ID_Institution SMALLINT NOT NULL AUTO_INCREMENT,
-    Nom_Institution VARCHAR(100),
+    Nom_Institution VARCHAR(100) NOT NULL,
     PRIMARY KEY (ID_Institution)
 );
 

@@ -1,27 +1,30 @@
 --
 -- Requêtes LID de base
 --
--- 1. Liste des types de musées
+-- 1. Sélectionne les types de musées
 SELECT * FROM type_musee;
 
--- 2. Noms des institutions
+-- 2. Sélectionne le nom des institutions
 SELECT Nom_Institution FROM institution;
 
--- 3. Musées qui ont ZOO dans leur nom
+-- 3. Sélectionne le nom des environnements
+SELECT Nom_environnement FROM type_environnement;
+
+-- 4. Sélectionne les musées qui ont ZOO dans leur nom
 SELECT Nom_Musee
 FROM musee
 WHERE Nom_Musee LIKE '%ZOO%';
 
--- 4. Musées qui n'ont pas de numéro de téléphone
+-- 5. Sélectionne les musées qui n’ont pas de numéro de téléphone
 SELECT Nom_Musee
 FROM musee
 WHERE Telephone IS NULL;
 
--- 5. Régions et etats correspondants
+-- 6. Sélectionne les Régions correspondants à chaque Etat
 SELECT Nom_Region, Nom_Etat FROM region
 INNER JOIN etat ON region.ID_Region = etat.RefRegion;
 
--- 6. Tous les musées du Mississippi (Optimisation avec index)
+-- 7. Sélectionne tous les musées du Mississipi (Optimisation avec index)
 CREATE INDEX idx_zip_code_refville ON zip_code (RefVille);
 CREATE INDEX idx_etat_nom ON etat (Nom_Etat);
 
@@ -31,7 +34,7 @@ INNER JOIN ville ON zip_code.RefVille = ville.ID_Ville
 INNER JOIN etat ON ville.RefEtat = etat.ID_Etat
 WHERE etat.Nom_Etat = 'Mississippi';
 
--- 7. Musées qui ne font pas de bénéfices (Optimisation avec index)
+-- 8. Sélectionne tous les musées qui ne font pas de bénéfices (Optimisation avec index)
 CREATE INDEX idx_musee_refemployeur ON musee (RefEmployeur);
 CREATE INDEX idx_finance_refemployeur ON finance (RefEmployeur);
 CREATE INDEX idx_finance_benefice ON finance (Benefice);
@@ -41,7 +44,7 @@ FROM musee m
 INNER JOIN finance f ON m.RefEmployeur = f.RefEmployeur
 WHERE f.Benefice = 0;
 
--- 8. Musées qui ont une Tax Period entre 2014 et 2015 en Louisianne
+-- 9. Sélectionne les musées qui ont renseigné leurs données fiscales en 2014 ou 2015 en Louisiane
 SELECT m.Nom_Musee
 FROM musee m
 INNER JOIN zip_code z ON m.RefZip_Code = z.ID_Zip_Code
@@ -51,7 +54,7 @@ INNER JOIN finance f ON m.RefEmployeur = f.RefEmployeur
 WHERE e.Nom_Etat = 'Louisiana'
 AND YEAR(f.Tax_Period) BETWEEN 2014 AND 2015;
 
--- 9. Musées de la ville de Baton Rouge
+-- 10. Sélectionne les musées de la ville de Baton Rouge
 SELECT Nom_Musee
 FROM musee
 WHERE RefZip_Code IN (
@@ -64,19 +67,25 @@ WHERE RefZip_Code IN (
     )
 );
 
--- 10. Musées sans données financières en Louisianne pour les années 2014 ou 2015
-SELECT m.Nom_Musee
-FROM musee m
-JOIN zip_code z ON m.RefZip_Code = z.ID_Zip_Code
-JOIN ville v ON z.RefVille = v.ID_Ville
-JOIN etat e ON v.RefEtat = e.ID_Etat
-WHERE m.RefEmployeur NOT IN (
-    SELECT f.RefEmployeur
-    FROM finance f
-    WHERE YEAR(f.Tax_Period) IN (2014, 2015)
-)
-AND e.Nom_Etat = 'Louisiana';
+-- 11. Sélectionne les musées d'Harvard
+SELECT m.ID_Musee, m.Nom_Musee FROM musee m
+WHERE m.RefInstitution IN (
+        SELECT i.ID_Institution FROM institution i
+        WHERE i.Nom_Institution LIKE '%HARVARD%'
+    );
 
+-- 12. Musées d'art en Louisiane
+SELECT m.ID_Musee, m.Nom_Musee FROM musee m
+WHERE m.RefType_Musee IN (
+        SELECT tm.ID_Type FROM type_musee tm
+        WHERE tm.Nom_Type LIKE '%ART%'
+    )
+    AND m.RefZip_Code IN (
+        SELECT zc.ID_Zip_Code FROM zip_code zc
+        INNER JOIN ville v ON zc.RefVille = v.ID_Ville
+        INNER JOIN etat e ON v.RefEtat = e.ID_Etat
+        WHERE e.Nom_Etat = 'LOUISIANA'
+    );
 
 --
 -- Requêtes de synthèse
@@ -88,7 +97,7 @@ FROM musee m
 INNER JOIN type_musee tm ON m.RefType_Musee = tm.ID_Type
 GROUP BY tm.Nom_Type;
 
--- 2. Types de musées les plus représentées par type_environnement
+-- 2. Types de musées les plus représentées par type d’environnement
 SELECT Nom_Environnement, Nom_Type, Nombre_Musees
 FROM (
     SELECT te.Nom_Environnement, tm.Nom_Type, COUNT(*) AS Nombre_Musees,
@@ -97,7 +106,7 @@ FROM (
     INNER JOIN type_musee tm ON m.RefType_Musee = tm.ID_Type
     INNER JOIN type_environnement te ON m.RefType_Environnement = te.ID_Environnement
     GROUP BY te.Nom_Environnement, tm.Nom_Type
-) AS subquery
+) AS Sous_requete
 WHERE rn = 1;
 
 -- 3. Classement des institutions par nombre de musées
@@ -141,12 +150,14 @@ INNER JOIN type_musee tm ON m.RefType_Musee = tm.ID_Type
 INNER JOIN finance f ON m.RefEmployeur = f.RefEmployeur
 GROUP BY tm.Nom_Type;
 
--- 8. Top 5 villes ayant le plus de musées
-SELECT Nom, COUNT(ID_Musee) AS Nombre_De_Musees
-FROM ville
-JOIN zip_code ON ville.ID_Ville = zip_code.RefVille
-JOIN musee ON zip_code.ID_Zip_Code = musee.RefZip_Code
-GROUP BY Nom
+-- 8. Top 5 villes ayant le plus de musées dans le Midwest
+SELECT v.Nom, COUNT(m.ID_Musee) AS Nombre_De_Musees FROM ville v
+INNER JOIN zip_code zc ON v.ID_Ville = zc.RefVille
+JOIN musee m ON zc.ID_Zip_Code = m.RefZip_Code
+JOIN etat e ON v.RefEtat = e.ID_Etat
+JOIN region r ON e.RefRegion = r.ID_Region
+WHERE r.Nom_Region = 'Midwest'
+GROUP BY v.Nom
 ORDER BY Nombre_De_Musees DESC
 LIMIT 5;
 
@@ -159,23 +170,22 @@ GROUP BY te.Nom_Environnement;
 -- 10. Les musées les plus éloignés de New York
 SELECT m.Nom_Musee, e.Nom_Etat, ROUND(
   6371000 * ACOS(
-    COS(RADIANS(40.712784)) * COS(RADIANS(m.Latitude)) * COS(RADIANS(m.Longitude) - RADIANS(-74.005941)) +
-      SIN(RADIANS(40.712784)) * SIN(RADIANS(m.Latitude))
+    COS(RADIANS(40.712784)) * COS(RADIANS(m.Latitude)) * COS(RADIANS(m.Longitude) -
+    RADIANS(-74.005941)) + SIN(RADIANS(40.712784)) * SIN(RADIANS(m.Latitude))
   ),
   2
-) AS Distance_en_metres FROM musee m INNER JOIN zip_code z ON m.Refzip_code = z.ID_Zip_Code 
+) AS Distance_en_metres FROM musee m
+      INNER JOIN zip_code z ON m.Refzip_code = z.ID_Zip_Code 
       INNER JOIN ville v ON z.RefVille = v.ID_Ville 
-      INNER JOIN etat e ON v.RefEtat = e.ID_Etat ORDER BY Distance_en_metres DESC LIMIT 10;
-
--- 11. Musées les plus rentable par région
-
-
+      INNER JOIN etat e ON v.RefEtat = e.ID_Etat
+      ORDER BY Distance_en_metres
+      DESC LIMIT 10;
 
 --
 -- Requêtes Complexes
 --
 
---1. Taux d'évolution des bénéfices par rapport à l'année précédente
+-- 1. Taux d'évolution des bénéfices par rapport à l'année précédente
 WITH BeneficeParAnnee AS (
     SELECT YEAR(Tax_Period) AS Annee,
            AVG(Benefice) AS BeneficeMoyen
@@ -222,33 +232,26 @@ GROUP BY Statut_Benefice;
 
 -- 3. Distance moyenne de chaque musée par rapport à Baton Rouge et Lafayette
 CREATE VIEW DistanceMoyenneVilles AS
-SELECT
-    tm.Nom_Type AS Type_Musee,
-    m.Nom_Musee AS Nom_Musee,
-    te.Nom_Environnement AS Environnement,
+SELECT tm.Nom_Type AS Type_Musee,
+       m.Nom_Musee AS Nom_Musee,
+       te.Nom_Environnement AS Environnement,
     ROUND(
         6371000 * ACOS(
-            COS(RADIANS(30.4493218)) * COS(RADIANS(m.Latitude)) * COS(RADIANS(m.Longitude) - RADIANS(-91.1813374)) +
-            SIN(RADIANS(30.4493218)) * SIN(RADIANS(m.Latitude))
+            COS(RADIANS(30.4493218)) * COS(RADIANS(m.Latitude)) * COS(RADIANS(m.Longitude) -
+            RADIANS(-91.1813374)) + SIN(RADIANS(30.4493218)) * SIN(RADIANS(m.Latitude))
         ),
         2
     ) AS Distance_BatonRouge_en_metres,
     ROUND(
         6371000 * ACOS(
-            COS(RADIANS(30.2240897)) * COS(RADIANS(m.Latitude)) * COS(RADIANS(m.Longitude) - RADIANS(-92.0198427)) +
-            SIN(RADIANS(30.2240897)) * SIN(RADIANS(m.Latitude))
+            COS(RADIANS(30.2240897)) * COS(RADIANS(m.Latitude)) * COS(RADIANS(m.Longitude) -
+            RADIANS(-92.0198427)) + SIN(RADIANS(30.2240897)) * SIN(RADIANS(m.Latitude))
         ),
         2
-    ) AS Distance_Lafayette_en_metres
-FROM
-    musee m
-INNER JOIN
-    type_musee tm ON m.RefType_Musee = tm.ID_Type
-INNER JOIN
-    type_environnement te ON m.RefType_Environnement = te.ID_Environnement
-WHERE
-    m.Latitude IS NOT NULL
-    AND m.Longitude IS NOT NULL;
+    ) AS Distance_Lafayette_en_metres FROM musee m
+INNER JOIN type_musee tm ON m.RefType_Musee = tm.ID_Type
+INNER JOIN type_environnement te ON m.RefType_Environnement = te.ID_Environnement
+WHERE m.Latitude IS NOT NULL AND m.Longitude IS NOT NULL;
 
 -- 4. Musée de chaque type qui minimise la somme des distances depuis les deux villes
 SELECT
@@ -258,8 +261,7 @@ SELECT
     Distance_BatonRouge_en_metres,
     Distance_Lafayette_en_metres
 FROM (
-    SELECT
-        *,
+    SELECT *,
         RANK() OVER (PARTITION BY Type_Musee ORDER BY Distance_BatonRouge_en_metres + Distance_Lafayette_en_metres) AS Classement
     FROM DistanceMoyenneVilles
 ) AS ClassementMusees
@@ -271,11 +273,11 @@ FROM musee m
 LEFT JOIN institution i ON m.RefInstitution = i.ID_Institution;
 
 -- 6. Employeur ayant le plus gros chiffre d affaires et combien de musées il possède
-SELECT e.ID_Employeur, e.Nom_Employeur,
-	   f.Chiffre_Affaires AS Chiffre_Affaires, COUNT(m.ID_Musee) AS Nombre_Musees
+SELECT e.ID_Employeur, e.Nom_Employeur, YEAR(f.Tax_Period) AS Annee,
+    f.Chiffre_Affaires AS Chiffre_Affaires, COUNT(m.ID_Musee) AS Nombre_Musees
 FROM employeur e
 INNER JOIN finance f ON e.ID_Employeur = f.RefEmployeur
 LEFT JOIN musee m ON e.ID_Employeur = m.RefEmployeur
-GROUP BY e.ID_Employeur, e.Nom_Employeur, f.Chiffre_Affaires
-ORDER BY Chiffre_Affaires DESC
+GROUP BY e.ID_Employeur, e.Nom_Employeur, Annee, f.Chiffre_Affaires
+ORDER BY Chiffre_Affaires DESC, Annee DESC
 LIMIT 5;

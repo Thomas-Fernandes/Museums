@@ -32,7 +32,7 @@ INSERT INTO musee (
 
 -- Requêtes de mise à jour
 
--- 1. Rachat d'un musée par une institution
+-- 3. Rachat d'un musée par une institution
 UPDATE musee
 SET RefInstitution = (
     SELECT ID_Institution
@@ -47,7 +47,7 @@ WHERE RefZip_Code IN (
     WHERE v.Nom = 'Baton Rouge' AND e.Nom_Etat = 'Louisiana'
 );
 
--- 2. Fusion des villes de Baton Rouge et de Port Allen
+-- 4. Fusion des villes de Baton Rouge et de Port Allen
 INSERT INTO zip_code (ID_Zip_Code, RefVille)
 VALUES (70899, (SELECT ID_Ville FROM ville WHERE Nom = 'Port Allen'));
 
@@ -59,12 +59,12 @@ WHERE RefZip_Code IN (
     WHERE RefVille = (SELECT ID_Ville FROM ville WHERE Nom = 'Port Allen')
 );
 
--- 3. Un musée change de numéro de téléphone
+-- 5. Le THREE NOTCH MUSEUM change de téléphone
 UPDATE musee
 SET Telephone = '2524220673'
 WHERE Nom_Musee = 'THREE NOTCH MUSEUM';
 
--- 4. Le JUDSON COLLEGE ferme et tous ses musées ferment avec
+-- 6. Le JUDSON COLLEGE ferme et tous ses musées ferment avec
 DELETE FROM musee WHERE RefInstitution IN (SELECT ID_Institution FROM institution WHERE Nom_Institution = 'JUDSON COLLEGE');
 
 DELETE FROM institution WHERE Nom_Institution = 'JUDSON COLLEGE';
